@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import status from "../config/status";
+import { PostRequest } from "../interfaces/request";
 const prisma = new PrismaClient();
 
 export class PostController {
@@ -68,7 +69,7 @@ export class PostController {
     }
   }
 
-  public static async update(req: Request, res: Response): Promise<void> {
+  public static async update(req: PostRequest, res: Response){
     try {
       const { id } = req.params;
       const { title, content } = req.body;

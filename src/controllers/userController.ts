@@ -53,11 +53,12 @@ export class UserController {
 
   public static async create(req: Request, res: Response): Promise<void> {
     try {
-      const { name, email } = req.body;
+      const { name, email, password } = req.body;
       const newUser = await prisma.user.create({
         data: {
           name,
           email,
+          password
         },
       });
       res.status(status.created).json(newUser);
