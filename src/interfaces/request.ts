@@ -17,7 +17,7 @@ export interface CommentRequest extends AuthRequest{
   comment: Comment
 }
 
-export interface UserRequest extends Request{
+export interface UserRequest extends AuthRequest{
   user: User,
   body: {
     name: string,
