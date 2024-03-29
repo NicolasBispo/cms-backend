@@ -1,10 +1,11 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import status from "../config/status";
+import { UserRequest } from "../interfaces/request";
 const prisma = new PrismaClient();
 
 export class UserController {
-  public static async index(req: Request, res: Response): Promise<void> {
+  public static async index(req: UserRequest, res: Response): Promise<void> {
     try {
       const page = parseInt(req.query.page as string) || 1;
       const perPage = parseInt(req.query.perPage as string) || 10;
@@ -33,7 +34,7 @@ export class UserController {
   }
 
 
-  public static async show(req: Request, res: Response): Promise<void> {
+  public static async show(req: UserRequest, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const user = await prisma.user.findUnique({
@@ -51,7 +52,7 @@ export class UserController {
     }
   }
 
-  public static async create(req: Request, res: Response): Promise<void> {
+  public static async create(req: UserRequest, res: Response): Promise<void> {
     try {
       const { name, email, password } = req.body;
       const newUser = await prisma.user.create({
@@ -67,7 +68,7 @@ export class UserController {
     }
   }
 
-  public static async update(req: Request, res: Response): Promise<void> {
+  public static async update(req: UserRequest, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const { name, email } = req.body;
@@ -86,7 +87,7 @@ export class UserController {
     }
   }
 
-  public static async delete(req: Request, res: Response): Promise<void> {
+  public static async delete(req: UserRequest, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       await prisma.user.delete({

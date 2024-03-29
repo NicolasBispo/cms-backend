@@ -5,7 +5,7 @@ import { PostRequest } from "../interfaces/request";
 const prisma = new PrismaClient();
 
 export class PostController {
-  public static async index(req: Request, res: Response): Promise<void> {
+  public static async index(req: PostRequest, res: Response): Promise<void> {
     try {
       const page = parseInt(req.query.page as string) || 1;
       const perPage = parseInt(req.query.perPage as string) || 10;
@@ -33,7 +33,7 @@ export class PostController {
     }
   }
 
-  public static async show(req: Request, res: Response): Promise<void> {
+  public static async show(req: PostRequest, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const post = await prisma.post.findUnique({
@@ -51,7 +51,7 @@ export class PostController {
     }
   }
 
-  public static async create(req: Request, res: Response): Promise<void> {
+  public static async create(req: PostRequest, res: Response): Promise<void> {
     try {
       const { title, content, userId } = req.body;
       const newPost = await prisma.post.create({
@@ -88,7 +88,7 @@ export class PostController {
     }
   }
 
-  public static async delete(req: Request, res: Response): Promise<void> {
+  public static async delete(req: PostRequest, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       await prisma.post.delete({

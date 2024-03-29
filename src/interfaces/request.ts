@@ -1,4 +1,4 @@
-import { Post, User } from "@prisma/client";
+import { Category, Post, User, Comment } from "@prisma/client";
 import { Request } from "express";
 
 export interface AuthRequest extends Request {
@@ -7,6 +7,14 @@ export interface AuthRequest extends Request {
 
 export interface PostRequest extends AuthRequest{
   post: Post
+}
+
+export interface CategoryRequest extends AuthRequest{
+  category: Category
+}
+
+export interface CommentRequest extends AuthRequest{
+  comment: Comment
 }
 
 export interface UserRequest extends Request{
