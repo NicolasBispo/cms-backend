@@ -2,8 +2,9 @@ import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import status from "../config/status";
 import { UserRequest } from "../interfaces/request";
+import { LogModel } from "../models/log";
 const prisma = new PrismaClient();
-
+const logAction = new LogModel();
 export class UserController {
   public static async index(req: UserRequest, res: Response): Promise<void> {
     try {
@@ -33,7 +34,6 @@ export class UserController {
     }
   }
 
-
   public static async show(req: UserRequest, res: Response): Promise<void> {
     try {
       const { id } = req.params;
@@ -59,12 +59,20 @@ export class UserController {
         data: {
           name,
           email,
-          password
+          password,
         },
       });
       res.status(status.created).json(newUser);
+      await logAction.createLog({
+        action: `Criacao de Usuario - ID->${newUser.id}, NOME->${newUser.name}`,
+        userId: req.currentUser.id,
+      });
     } catch (err) {
       res.status(status.badRequest).json({ message: err });
+      await logAction.createLog({
+        action: `Erro na criacao de Usuario - ERRO->${err.toString()}`,
+        userId: req.currentUser.id,
+      });
     }
   }
 
@@ -82,8 +90,16 @@ export class UserController {
         },
       });
       res.json(updatedUser);
+      await logAction.createLog({
+        action: `EDICAO de Usuario - ID->${updatedUser.id}, NOME->${updatedUser.name}`,
+        userId: req.currentUser.id,
+      });
     } catch (err) {
       res.status(status.badRequest).json({ message: err });
+      await logAction.createLog({
+        action: `Erro na ATUALIZACAO de Usuario - ERRO->${err.toString()}`,
+        userId: req.currentUser.id,
+      });
     }
   }
 
@@ -96,8 +112,16 @@ export class UserController {
         },
       });
       res.json({ message: "User deleted successfully" });
+      await logAction.createLog({
+        action: `REMOCAO de Usuario - ID->${id}`,
+        userId: req.currentUser.id,
+      });
     } catch (err) {
       res.status(status.badRequest).json({ message: err });
+      await logAction.createLog({
+        action: `Erro na REMOCAO de Usuario - ERRO->${err.toString()}`,
+        userId: req.currentUser.id,
+      });
     }
   }
 }

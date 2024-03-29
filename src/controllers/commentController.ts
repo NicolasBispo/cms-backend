@@ -1,10 +1,11 @@
-import {  Response } from "express";
+import { Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import status from "../config/status";
 import { CommentRequest } from "../interfaces/request";
+import { LogModel } from "../models/log";
 
 const prisma = new PrismaClient();
-
+const logAction = new LogModel();
 export class CommentController {
   public static async index(req: CommentRequest, res: Response): Promise<void> {
     try {
@@ -52,7 +53,10 @@ export class CommentController {
     }
   }
 
-  public static async create(req: CommentRequest, res: Response): Promise<void> {
+  public static async create(
+    req: CommentRequest,
+    res: Response
+  ): Promise<void> {
     try {
       const { content, postId, authorId } = req.body;
       const newComment = await prisma.comment.create({
@@ -63,14 +67,25 @@ export class CommentController {
         },
       });
       res.status(status.created).json(newComment);
+      await logAction.createLog({
+        action: `Criacao de comentario - ID->${newComment.id}, CONTEUDO->${newComment.content}`,
+        userId: req.currentUser.id,
+      });
     } catch (err) {
       res
         .status(status.badRequest)
         .json({ message: "Error creating comment", error: err });
+      await logAction.createLog({
+        action: `Erro na criacao de comentario - Erro => ${err.toString()}`,
+        userId: req.currentUser.id,
+      });
     }
   }
 
-  public static async update(req: CommentRequest, res: Response): Promise<void> {
+  public static async update(
+    req: CommentRequest,
+    res: Response
+  ): Promise<void> {
     try {
       const { id } = req.params;
       const { content } = req.body;
@@ -83,14 +98,25 @@ export class CommentController {
         },
       });
       res.json(updatedComment);
+      await logAction.createLog({
+        action: `Edicao de comentario - ID->${updatedComment.id}, NOVO-CONTEUDO->${updatedComment.content}`,
+        userId: req.currentUser.id,
+      });
     } catch (err) {
       res
         .status(status.badRequest)
         .json({ message: "Error updating comment", error: err });
+      await logAction.createLog({
+        action: `Erro na Edicao de comentario - Erro => ${err.toString()}`,
+        userId: req.currentUser.id,
+      });
     }
   }
 
-  public static async delete(req: CommentRequest, res: Response): Promise<void> {
+  public static async delete(
+    req: CommentRequest,
+    res: Response
+  ): Promise<void> {
     try {
       const { id } = req.params;
       await prisma.comment.delete({
@@ -99,10 +125,18 @@ export class CommentController {
         },
       });
       res.json({ message: "Comment deleted successfully" });
+      await logAction.createLog({
+        action: `Remocao de comentario - ID->${id}`,
+        userId: req.currentUser.id,
+      });
     } catch (err) {
       res
         .status(status.badRequest)
         .json({ message: "Error deleting comment", error: err });
+      await logAction.createLog({
+        action: `Erro na remocao de comentario - Erro => ${err.toString()}`,
+        userId: req.currentUser.id,
+      });
     }
   }
 }

@@ -2,8 +2,9 @@ import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import status from "../config/status";
 import { PostRequest } from "../interfaces/request";
+import { LogModel } from "../models/log";
 const prisma = new PrismaClient();
-
+const logAction = new LogModel();
 export class PostController {
   public static async index(req: PostRequest, res: Response): Promise<void> {
     try {
@@ -64,12 +65,20 @@ export class PostController {
         },
       });
       res.status(status.created).json(newPost);
+      await logAction.createLog({
+        action: `Criacao de Post - ID->${newPost.id}, NOME->${newPost.id}`,
+        userId: req.currentUser.id,
+      });
     } catch (err) {
       res.status(status.badRequest).json({ message: err });
+      await logAction.createLog({
+        action: `Erro na criacao de post - Erro => ${err.toString()}`,
+        userId: req.currentUser.id,
+      });
     }
   }
 
-  public static async update(req: PostRequest, res: Response){
+  public static async update(req: PostRequest, res: Response) {
     try {
       const { id } = req.params;
       const { title, content } = req.body;
@@ -83,8 +92,16 @@ export class PostController {
         },
       });
       res.json(updatedPost);
+      await logAction.createLog({
+        action: `Criacao de Post - ID->${updatedPost.id}, NOME->${updatedPost.id}`,
+        userId: req.currentUser.id,
+      });
     } catch (err) {
       res.status(status.badRequest).json({ message: err });
+      await logAction.createLog({
+        action: `Erro na edicao de post - Erro => ${err.toString()}`,
+        userId: req.currentUser.id,
+      });
     }
   }
 
@@ -97,8 +114,16 @@ export class PostController {
         },
       });
       res.json({ message: "Post deleted successfully" });
+      await logAction.createLog({
+        action: `REMOCAO de Post - ID->${id}`,
+        userId: req.currentUser.id,
+      });
     } catch (err) {
       res.status(status.badRequest).json({ message: err });
+      await logAction.createLog({
+        action: `Erro na remocao de post - Erro => ${err.toString()}`,
+        userId: req.currentUser.id,
+      });
     }
   }
 }
