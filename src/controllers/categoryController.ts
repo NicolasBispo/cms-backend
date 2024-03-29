@@ -2,10 +2,14 @@ import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import status from "../config/status";
 import { CategoryRequest } from "../interfaces/request";
+import { LogModel } from "../models/log";
 const prisma = new PrismaClient();
-
+const logAction = new LogModel();
 export class CategoryController {
-  public static async index(req: CategoryRequest, res: Response): Promise<void> {
+  public static async index(
+    req: CategoryRequest,
+    res: Response
+  ): Promise<void> {
     try {
       const page = parseInt(req.query.page as string) || 1;
       const perPage = parseInt(req.query.perPage as string) || 10;
@@ -53,7 +57,10 @@ export class CategoryController {
     }
   }
 
-  public static async create(req: CategoryRequest, res: Response): Promise<void> {
+  public static async create(
+    req: CategoryRequest,
+    res: Response
+  ): Promise<void> {
     try {
       const { name } = req.body;
       const newCategory = await prisma.category.create({
@@ -62,12 +69,23 @@ export class CategoryController {
         },
       });
       res.status(status.created).json(newCategory);
+      await logAction.createLog({
+        action: `Criacao de categoria - ID->${newCategory.id}, NOME->${newCategory.id}`,
+        userId: req.currentUser.id,
+      });
     } catch (err) {
       res.status(status.badRequest).json({ message: err });
+      await logAction.createLog({
+        action: `Erro na criacao de categoria - Erro => ${err.toString()}`,
+        userId: req.currentUser.id,
+      });
     }
   }
 
-  public static async update(req: CategoryRequest, res: Response): Promise<void> {
+  public static async update(
+    req: CategoryRequest,
+    res: Response
+  ): Promise<void> {
     try {
       const { id } = req.params;
       const { name } = req.body;
@@ -80,12 +98,23 @@ export class CategoryController {
         },
       });
       res.json(updatedCategory);
+      await logAction.createLog({
+        action: `Edicao de categoria - ID->${updatedCategory.id}, NOME->${updatedCategory.id}`,
+        userId: req.currentUser.id,
+      });
     } catch (err) {
       res.status(status.badRequest).json({ message: err });
+      await logAction.createLog({
+        action: `Erro na edicao de categoria - Erro => ${err.toString()}`,
+        userId: req.currentUser.id,
+      });
     }
   }
 
-  public static async delete(req: CategoryRequest, res: Response): Promise<void> {
+  public static async delete(
+    req: CategoryRequest,
+    res: Response
+  ): Promise<void> {
     try {
       const { id } = req.params;
       await prisma.category.delete({
@@ -94,8 +123,16 @@ export class CategoryController {
         },
       });
       res.json({ message: "Category deleted successfully" });
+      await logAction.createLog({
+        action: `Remocao de categoria - ID->${id}`,
+        userId: req.currentUser.id,
+      });
     } catch (err) {
       res.status(status.badRequest).json({ message: err });
+      await logAction.createLog({
+        action: `Erro na remocao de categoria - Erro => ${err.toString()}`,
+        userId: req.currentUser.id,
+      });
     }
   }
 }
