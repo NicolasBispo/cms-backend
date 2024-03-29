@@ -3,13 +3,14 @@ import { userRouter } from "./user";
 import { categoryRouter } from "./category";
 import { postRouter } from "./post";
 import { commentRouter } from "./comment";
+import { defaultRoutes } from "./default";
 
 const router = express.Router();
 
+router.use("/", defaultRoutes);
 router.use("/users", userRouter);
 router.use("/categories", categoryRouter);
 router.use("/posts", postRouter);
 router.use("/comments", commentRouter);
 
-
-export default router
+export default router;

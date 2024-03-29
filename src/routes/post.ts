@@ -1,11 +1,13 @@
-import express from "express";
+import {Router} from "express";
 import { PostController as postController } from "../controllers/postController";
-const router = express.Router()
+import { postBelongsToUser, setPost } from "../middlewares/postsMiddlewares";
+import { isAuth } from "../middlewares/authMiddleware";
+const router = Router();
 
-router.get('/', postController.index);
-router.get('/:id', postController.show);
-router.post('/', postController.create);
-router.put('/:id', postController.update);
-router.delete('/:id', postController.delete);
+router.get("/", postController.index);
+router.get("/:id", postController.show);
+router.post("/", isAuth, postController.create);
+router.put("/:id", isAuth, setPost, postBelongsToUser, postController.update);
+router.delete("/:id", isAuth, setPost, postBelongsToUser, postController.delete);
 
-export const postRouter = router
+export const postRouter = router;
