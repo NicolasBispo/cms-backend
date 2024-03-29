@@ -1,10 +1,11 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import status from "../config/status";
+import { CategoryRequest } from "../interfaces/request";
 const prisma = new PrismaClient();
 
 export class CategoryController {
-  public static async index(req: Request, res: Response): Promise<void> {
+  public static async index(req: CategoryRequest, res: Response): Promise<void> {
     try {
       const page = parseInt(req.query.page as string) || 1;
       const perPage = parseInt(req.query.perPage as string) || 10;
@@ -32,7 +33,7 @@ export class CategoryController {
     }
   }
 
-  public static async show(req: Request, res: Response): Promise<void> {
+  public static async show(req: CategoryRequest, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const category = await prisma.category.findUnique({
@@ -52,7 +53,7 @@ export class CategoryController {
     }
   }
 
-  public static async create(req: Request, res: Response): Promise<void> {
+  public static async create(req: CategoryRequest, res: Response): Promise<void> {
     try {
       const { name } = req.body;
       const newCategory = await prisma.category.create({
@@ -66,7 +67,7 @@ export class CategoryController {
     }
   }
 
-  public static async update(req: Request, res: Response): Promise<void> {
+  public static async update(req: CategoryRequest, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const { name } = req.body;
@@ -84,7 +85,7 @@ export class CategoryController {
     }
   }
 
-  public static async delete(req: Request, res: Response): Promise<void> {
+  public static async delete(req: CategoryRequest, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       await prisma.category.delete({

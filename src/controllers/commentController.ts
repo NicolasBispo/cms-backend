@@ -1,11 +1,12 @@
-import { Request, Response } from "express";
-import { PrismaClient, Comment } from "@prisma/client";
+import {  Response } from "express";
+import { PrismaClient } from "@prisma/client";
 import status from "../config/status";
+import { CommentRequest } from "../interfaces/request";
 
 const prisma = new PrismaClient();
 
 export class CommentController {
-  public static async index(req: Request, res: Response): Promise<void> {
+  public static async index(req: CommentRequest, res: Response): Promise<void> {
     try {
       const page = parseInt(req.query.page as string) || 1;
       const perPage = parseInt(req.query.perPage as string) || 10;
@@ -33,7 +34,7 @@ export class CommentController {
     }
   }
 
-  public static async show(req: Request, res: Response): Promise<void> {
+  public static async show(req: CommentRequest, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const comment = await prisma.comment.findUnique({
@@ -51,7 +52,7 @@ export class CommentController {
     }
   }
 
-  public static async create(req: Request, res: Response): Promise<void> {
+  public static async create(req: CommentRequest, res: Response): Promise<void> {
     try {
       const { content, postId, authorId } = req.body;
       const newComment = await prisma.comment.create({
@@ -69,7 +70,7 @@ export class CommentController {
     }
   }
 
-  public static async update(req: Request, res: Response): Promise<void> {
+  public static async update(req: CommentRequest, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const { content } = req.body;
@@ -89,7 +90,7 @@ export class CommentController {
     }
   }
 
-  public static async delete(req: Request, res: Response): Promise<void> {
+  public static async delete(req: CommentRequest, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       await prisma.comment.delete({
