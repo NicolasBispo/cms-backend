@@ -8,43 +8,57 @@ datasource db {
 }
 
 model Post {
-  id         Int          @id @default(autoincrement())
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
-  title      String       @db.VarChar(255)
+  id         Int        @id @default(autoincrement())
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  title      String     @db.VarChar(255)
   content    String?
-  published  Boolean      @default(false)
-  author     User         @relation(fields: [authorId], references: [id])
+  published  Boolean    @default(false)
+  author     User       @relation(fields: [authorId], references: [id])
   authorId   Int
   categories Category[]
   comments   Comment[]
 }
 
 model Comment {
-  id       Int    @id @default(autoincrement())
+  id       Int     @id @default(autoincrement())
   content  String
-  post     Post   @relation(fields: [postId], references: [id])
+  post     Post    @relation(fields: [postId], references: [id])
   postId   Int
-  author   User   @relation(fields: [authorId], references: [id])
+  author   User    @relation(fields: [authorId], references: [id])
   authorId Int
+  replies  Reply[]
+}
+
+model Reply{
+  id Int @id @default(autoincrement())
+  content        String
+  author     User @relation(fields: [authorId], references: [id])
+  authorId   Int
+  comment     Comment @relation(fields: [commentId], references: [id])
+  commentId   Int
+  parentReply Reply?   @relation("ParentReplyToChildReplies", fields: [parentId], references: [id])
+  parentId    Int?
+  childReplies Reply[] @relation("ParentReplyToChildReplies")
 }
 
 model Log {
-  id         Int     @id @default(autoincrement())
-  action     String
-  user       User    @relation(fields: [userId], references: [id])
-  userId     Int
-  createdAt  DateTime @default(now())
+  id        Int      @id @default(autoincrement())
+  action    String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  createdAt DateTime @default(now())
 }
 
 model User {
-  id         Int          @id @default(autoincrement())
-  email      String       @unique
-  name       String?
-  posts      Post[]
-  password   String
-  comments   Comment[]
-  logs      Log[]
+  id       Int       @id @default(autoincrement())
+  email    String    @unique
+  name     String?
+  posts    Post[]
+  password String
+  comments Comment[]
+  logs     Log[]
+  replies Reply[]
 }
 
 model Category {
