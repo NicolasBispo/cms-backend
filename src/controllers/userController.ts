@@ -3,6 +3,8 @@ import { PrismaClient } from "@prisma/client";
 import status from "../config/status";
 import { UserRequest } from "../interfaces/request";
 import { LogModel } from "../models/log";
+import jwt from "jsonwebtoken";
+
 const prisma = new PrismaClient();
 const logAction = new LogModel();
 export class UserController {
@@ -122,6 +124,44 @@ export class UserController {
         action: `Erro na REMOCAO de Usuario - ERRO->${err.toString()}`,
         userId: req.currentUser.id,
       });
+    }
+  }
+
+  public static async login(req: Request, res: Response): Promise<void> {
+    try {
+      const { email, password } = req.body;
+
+      // Verifique as credenciais do usuário aqui (não incluído neste exemplo)
+
+      // Supondo que a autenticação foi bem-sucedida, você pode gerar um token JWT
+      const user = await prisma.user.findUnique({ where: { email } });
+
+      if (!user) {
+        res
+          .status(status.unauthorized)
+          .json({ message: "Credenciais inválidas" });
+        return;
+      }
+
+      // Exemplo simples de verificação de senha (substitua pela sua própria lógica)
+      if (user.password !== password) {
+        res
+          .status(status.unauthorized)
+          .json({ message: "Credenciais inválidas" });
+        return;
+      }
+
+      const token = jwt.sign({ userId: user.id }, "okokokokokoko", {
+        expiresIn: "1h",
+      }); // Substitua "suaChaveSecreta" pela sua chave secreta
+
+      // Envie o token no cabeçalho de autorização da resposta
+      res.setHeader("Authorization", `${token}`);
+      res.status(status.ok).json({ token });
+    } catch (err) {
+      res
+        .status(status.internalServerError)
+        .json({ message: "Erro no login", error: err });
     }
   }
 }
