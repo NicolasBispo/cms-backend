@@ -1,9 +1,9 @@
 import express from 'express'
-import passport from 'passport';
+import { UserController } from '../controllers/userController';
 const router = express.Router();
 
 
-router.post("/login", passport.authenticate("jwt", { session: false }));
+router.post("/login", UserController.login);
 
 router.post("/register")
 
