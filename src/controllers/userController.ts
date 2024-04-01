@@ -27,7 +27,7 @@ export class UserController {
         perPage: perPage,
         totalItems: totalCount,
         totalPages: Math.ceil(totalCount / perPage),
-        users: users,
+        results: users,
       });
     } catch (err) {
       res

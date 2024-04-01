@@ -18,6 +18,16 @@ model Post {
   authorId   Int
   categories Category[]
   comments   Comment[]
+  postBanner String?
+  tags PostTag[]
+}
+
+model PostTag {
+  id         Int        @id @default(autoincrement())
+  name      String?
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  posts Post[]
 }
 
 model Comment {
@@ -64,5 +74,6 @@ model User {
 model Category {
   id    Int    @id @default(autoincrement())
   name  String
+  thumbImage String? 
   posts Post[]
 }
