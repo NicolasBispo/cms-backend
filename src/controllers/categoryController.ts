@@ -28,7 +28,7 @@ export class CategoryController {
         perPage: perPage,
         totalItems: totalCount,
         totalPages: Math.ceil(totalCount / perPage),
-        categories: categories,
+        results: categories,
       });
     } catch (err) {
       res

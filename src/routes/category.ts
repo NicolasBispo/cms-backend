@@ -5,8 +5,8 @@ import { setCategory } from "../middlewares/categoriesMiddlewares";
 import { validateCreateCategory } from "../middlewares/validators/category";
 const router = express.Router();
 
-router.get("/", isAuth, CategoryController.index);
-router.get("/:id", isAuth, CategoryController.show);
+router.get("/", CategoryController.index);
+router.get("/:id", CategoryController.show);
 router.post("/", isAuth, validateCreateCategory, CategoryController.create);
 router.put(
   "/:id",

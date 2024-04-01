@@ -26,7 +26,7 @@ export class CommentController {
         perPage: perPage,
         totalItems: totalCount,
         totalPages: Math.ceil(totalCount / perPage),
-        comments: comments,
+        results: comments,
       });
     } catch (err) {
       res

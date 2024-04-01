@@ -1,36 +1,80 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+import { Post, PrismaClient } from "@prisma/client";
 import status from "../config/status";
 import { PostRequest } from "../interfaces/request";
 import { LogModel } from "../models/log";
+import { errorResponse } from "../utils/formatResponse";
 const prisma = new PrismaClient();
 const logAction = new LogModel();
 export class PostController {
   public static async index(req: PostRequest, res: Response): Promise<void> {
     try {
+      const raw = Boolean(req.query.raw)
       const page = parseInt(req.query.page as string) || 1;
       const perPage = parseInt(req.query.perPage as string) || 10;
 
       const skip = (page - 1) * perPage;
 
       const totalCount = await prisma.post.count();
-      const posts = await prisma.post.findMany({
-        take: perPage,
-        skip: skip,
-        orderBy: { id: "desc" },
-      });
+      let posts : Post[]
+      
+      if(raw){
+        posts = await prisma.post.findMany({
+          take: perPage,
+          skip: skip,
+          orderBy: { id: "desc" },
+          include: {
+            author: {select: {id: true, name: true, email: true}},
+            categories: true,
+            comments: true
+          }
+        });
+      }
+      else{
+        posts = await prisma.post.findMany({
+          take: perPage,
+          skip: skip,
+          orderBy: { id: "desc" },
+        });
+      }
 
       res.json({
         page: page,
         perPage: perPage,
         totalItems: totalCount,
         totalPages: Math.ceil(totalCount / perPage),
-        posts: posts,
+        results: posts,
       });
     } catch (err) {
       res
         .status(status.internalServerError)
         .json({ message: "Error retrieving posts", error: err });
+    }
+  }
+
+  public static async getTrendingPost(req: PostRequest, res: Response): Promise<void>{
+    try {
+      const postWithMostComments = await prisma.post.findMany({
+        include: {
+          comments: true,
+          author: {select: {name: true, email: true}},
+        },
+        orderBy: {
+          comments: {
+            _count: 'desc',
+          },
+        },
+        take: 1,
+      });
+
+      
+  
+      
+      res.json(postWithMostComments[0]);
+    }
+    catch (error) {
+      console.error('Erro ao encontrar o post com mais comentários:', error);
+      res.status(status.internalServerError).send(errorResponse("Erro interno do servidor"));
     }
   }
 
@@ -41,6 +85,12 @@ export class PostController {
         where: {
           id: parseInt(id),
         },
+        include: {
+          author: true,
+         categories: true,
+         comments: true ,
+         tags: true
+        }
       });
       if (!post) {
         res.status(404).json({ message: "Post not found" });

@@ -6,6 +6,7 @@ import { validateCreatePost } from "../middlewares/validators/posts";
 const router = Router();
 
 router.get("/", postController.index);
+router.get("/trending", postController.getTrendingPost);
 router.get("/:id", postController.show);
 router.post("/", isAuth, validateCreatePost, postController.create);
 router.put(
