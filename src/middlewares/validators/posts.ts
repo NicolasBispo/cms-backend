@@ -7,13 +7,9 @@ export const validateCreatePost = [
     .notEmpty()
     .isLength({ min: 300 })
     .withMessage("Conteudo deve ser no minimo 300 caracteres"),
-    body("authorId")
-    .notEmpty()
-    .isNumeric()
-    .withMessage("Insira o ID do author"),
-    body("categories").isArray({min: 1}).withMessage("Informe ao menos 1 categoria").custom((value) => {
-      if(!value.every(Number.isInteger)) throw new Error('O array tem que ser exclusivo de numeros');
-    }),
+  body("categories")
+    .isArray({ min: 1 })
+    .withMessage("Informe ao menos 1 categoria"),
 
   (req: Request, res: Response, next: NextFunction) => {
     const errors = validationResult(req);
