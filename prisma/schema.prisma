@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
 }
 
 datasource db {
@@ -19,15 +20,15 @@ model Post {
   categories Category[]
   comments   Comment[]
   postBanner String?
-  tags PostTag[]
+  tags       PostTag[]
 }
 
 model PostTag {
-  id         Int        @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   name      String?
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
-  posts Post[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  posts     Post[]
 }
 
 model Comment {
@@ -40,15 +41,15 @@ model Comment {
   replies  Reply[]
 }
 
-model Reply{
-  id Int @id @default(autoincrement())
-  content        String
-  author     User @relation(fields: [authorId], references: [id])
-  authorId   Int
-  comment     Comment @relation(fields: [commentId], references: [id])
-  commentId   Int
-  parentReply Reply?   @relation("ParentReplyToChildReplies", fields: [parentId], references: [id])
-  parentId    Int?
+model Reply {
+  id           Int     @id @default(autoincrement())
+  content      String
+  author       User    @relation(fields: [authorId], references: [id])
+  authorId     Int
+  comment      Comment @relation(fields: [commentId], references: [id])
+  commentId    Int
+  parentReply  Reply?  @relation("ParentReplyToChildReplies", fields: [parentId], references: [id])
+  parentId     Int?
   childReplies Reply[] @relation("ParentReplyToChildReplies")
 }
 
@@ -68,12 +69,12 @@ model User {
   password String
   comments Comment[]
   logs     Log[]
-  replies Reply[]
+  replies  Reply[]
 }
 
 model Category {
-  id    Int    @id @default(autoincrement())
-  name  String
-  thumbImage String? 
-  posts Post[]
+  id         Int     @id @default(autoincrement())
+  name       String
+  thumbImage String?
+  posts      Post[]
 }
