@@ -9,12 +9,17 @@ export const isAuth = async (
   next: NextFunction
 ) => {
   if (req.headers.authorization) {
-    const privateKey = process.env.JWT_PRIVATE_KEY || "private_default";
+    const privateKey = "default_key";
     jwt.verify(req.headers.authorization, privateKey, (err, decoded) => {
       if (err) {
         return res
           .status(401)
-          .send({ error: true, message: "Token inválido", status: 401 });
+          .send({
+            error: true,
+            message: "Token inválido",
+            status: 401,
+            error_message: err,
+          });
       }
 
       if (typeof decoded !== "string") {

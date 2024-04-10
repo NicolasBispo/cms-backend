@@ -151,7 +151,7 @@ export class UserController {
         return;
       }
 
-      const token = jwt.sign({ userId: user.id }, "okokokokokoko", {
+      const token = jwt.sign({ user: user }, "default_key", {
         expiresIn: "1h",
       }); // Substitua "suaChaveSecreta" pela sua chave secreta
 
