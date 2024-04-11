@@ -9,34 +9,81 @@ const logAction = new LogModel();
 export class PostController {
   public static async index(req: PostRequest, res: Response): Promise<void> {
     try {
-      const raw = Boolean(req.query.raw)
+      //possible filters
+      const raw = Boolean(req.query.raw);
       const page = parseInt(req.query.page as string) || 1;
       const perPage = parseInt(req.query.perPage as string) || 10;
+      const category = req.query.category as string;
+      const startDate = req?.query?.startDate
+        ? new Date(req?.query?.createdAt as string)
+        : undefined;
+      const endDate = req?.query?.endDate
+        ? new Date(req?.query?.createdAt as string)
+        : undefined;
+      const title = req?.query?.title as string | undefined;
+
+      const categoryIds = category?.split(",").map((id) => parseInt(id));
 
       const skip = (page - 1) * perPage;
 
-      const totalCount = await prisma.post.count();
-      let posts : Post[]
-      
-      if(raw){
-        posts = await prisma.post.findMany({
-          take: perPage,
-          skip: skip,
-          orderBy: { id: "desc" },
-          include: {
-            author: {select: {id: true, name: true, email: true}},
+      const rawCondition = raw
+        ? {
+            author: { select: { id: true, name: true, email: true } },
             categories: true,
-            comments: true
+            comments: true,
           }
-        });
-      }
-      else{
-        posts = await prisma.post.findMany({
-          take: perPage,
-          skip: skip,
-          orderBy: { id: "desc" },
-        });
-      }
+        : {};
+
+      const whereCategory = category
+        ? {
+            categories: {
+              some: {
+                id: {
+                  in: categoryIds,
+                },
+              },
+            },
+          }
+        : {};
+
+      const whereBetweenCreateDateCondition = {
+        createdAt: {
+          ...(startDate ? { gt: startDate } : {}),
+          ...(endDate ? { lt: endDate } : {}),
+        },
+      };
+
+      const searchByPostName = title
+        ? {
+            title: {
+              search: title,
+            },
+          }
+        : {};
+
+      const whereConditions = [
+        whereCategory,
+        whereBetweenCreateDateCondition,
+        searchByPostName,
+      ];
+
+      const totalCount = await prisma.post.count({
+        where: {
+          AND: [...whereConditions],
+        },
+      });
+
+      let posts: Post[];
+
+      posts = await prisma.post.findMany({
+        take: perPage,
+        skip: skip,
+        orderBy: { id: "desc" },
+        include: rawCondition,
+        where: {
+          AND: [...whereConditions],
+        },
+      });
 
       res.json({
         page: page,
@@ -48,33 +95,34 @@ export class PostController {
     } catch (err) {
       res
         .status(status.internalServerError)
-        .json({ message: "Error retrieving posts", error: err });
+        .json({ message: "Error retrieving posts", error: err.message });
     }
   }
 
-  public static async getTrendingPost(req: PostRequest, res: Response): Promise<void>{
+  public static async getTrendingPost(
+    req: PostRequest,
+    res: Response
+  ): Promise<void> {
     try {
       const postWithMostComments = await prisma.post.findMany({
         include: {
           comments: true,
-          author: {select: {name: true, email: true}},
+          author: { select: { name: true, email: true } },
         },
         orderBy: {
           comments: {
-            _count: 'desc',
+            _count: "desc",
           },
         },
         take: 1,
       });
 
-      
-  
-      
       res.json(postWithMostComments[0]);
-    }
-    catch (error) {
-      console.error('Erro ao encontrar o post com mais comentários:', error);
-      res.status(status.internalServerError).send(errorResponse("Erro interno do servidor"));
+    } catch (error) {
+      console.error("Erro ao encontrar o post com mais comentários:", error);
+      res
+        .status(status.internalServerError)
+        .send(errorResponse("Erro interno do servidor"));
     }
   }
 
@@ -87,10 +135,10 @@ export class PostController {
         },
         include: {
           author: true,
-         categories: true,
-         comments: true ,
-         tags: true
-        }
+          categories: true,
+          comments: true,
+          tags: true,
+        },
       });
       if (!post) {
         res.status(404).json({ message: "Post not found" });
@@ -104,13 +152,16 @@ export class PostController {
 
   public static async create(req: PostRequest, res: Response): Promise<void> {
     try {
-      const { title, content, userId } = req.body;
+      const { title, content, categories } = req.body;
       const newPost = await prisma.post.create({
         data: {
           title,
           content,
           author: {
-            connect: { id: parseInt(userId) },
+            connect: { id: req.currentUser.id },
+          },
+          categories: {
+            connect: categories.map((categoryId:number) => ({ id: categoryId })),
           },
         },
       });
@@ -131,7 +182,7 @@ export class PostController {
   public static async update(req: PostRequest, res: Response) {
     try {
       const { id } = req.params;
-      const { title, content } = req.body;
+      const { title, content, authorId, categories } = req.body;
       const updatedPost = await prisma.post.update({
         where: {
           id: parseInt(id),
@@ -139,6 +190,12 @@ export class PostController {
         data: {
           title,
           content,
+          author: { connect: { id: authorId } },
+          categories: {
+            connect: categories.map((categoryId: number) => ({
+              id: categoryId,
+            })),
+          },
         },
       });
       res.json(updatedPost);
